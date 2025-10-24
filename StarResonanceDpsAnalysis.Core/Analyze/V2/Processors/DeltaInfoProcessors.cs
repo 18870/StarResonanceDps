@@ -4,6 +4,7 @@ using StarResonanceDpsAnalysis.Core.Analyze.Models;
 using StarResonanceDpsAnalysis.Core.Data.Models;
 using StarResonanceDpsAnalysis.Core.Extends.BlueProto;
 using StarResonanceDpsAnalysis.Core.Extends.System;
+using StarResonanceDpsAnalysis.Core.Logging;
 using StarResonanceDpsAnalysis.Core.Tools;
 using StarResonanceDpsAnalysis.WPF.Data;
 using Google.Protobuf;
@@ -30,11 +31,9 @@ public abstract class BaseDeltaInfoProcessor(IDataStorage storage, ILogger? logg
         var isTargetPlayer = targetUuidRaw.IsUuidPlayerRaw();
         var targetUuid = targetUuidRaw.ShiftRight16();
 
-        // Re-enable attribute updates from delta packets (parity with v1)
         var attrCollection = delta.Attrs;
         if (attrCollection?.Attrs != null && isTargetPlayer)
         {
-            // Ensure player exists in storage
             _storage.EnsurePlayer(targetUuid);
 
             foreach (var attr in attrCollection.Attrs)
@@ -43,7 +42,6 @@ public abstract class BaseDeltaInfoProcessor(IDataStorage storage, ILogger? logg
                 var reader = new CodedInputStream(attr.RawData.ToByteArray());
 
                 var attrType = (AttrType)attr.Id;
-                // silently skip unknown ids to be robust to protocol changes
                 switch (attrType)
                 {
                     case AttrType.AttrName:
@@ -71,8 +69,6 @@ public abstract class BaseDeltaInfoProcessor(IDataStorage storage, ILogger? logg
                         _storage.SetPlayerHP(targetUuid, reader.ReadInt32());
                         break;
                     case AttrType.AttrMaxHp:
-                        _storage.SetPlayerMaxHP(targetUuid, reader.ReadInt32());
-                        break;
                     case AttrType.AttrId:
                     case AttrType.AttrElementFlag:
                     case AttrType.AttrReductionLevel:
@@ -81,7 +77,6 @@ public abstract class BaseDeltaInfoProcessor(IDataStorage storage, ILogger? logg
                         _ = reader.ReadInt32();
                         break;
                     default:
-                        // ignore unknown
                         break;
                 }
             }
@@ -89,6 +84,10 @@ public abstract class BaseDeltaInfoProcessor(IDataStorage storage, ILogger? logg
 
         var skillEffect = delta.SkillEffects;
         if (skillEffect?.Damages == null || skillEffect.Damages.Count == 0) return;
+
+        var count = 0;
+        var heals = 0;
+        var crits = 0;
 
         foreach (var d in skillEffect.Damages)
         {
@@ -123,6 +122,16 @@ public abstract class BaseDeltaInfoProcessor(IDataStorage storage, ILogger? logg
                 IsMiss = d.HasIsMiss && d.IsMiss,
                 IsDead = d.HasIsDead && d.IsDead
             });
+            count++;
+            if ((d.TypeFlag & 1) == 1) crits++;
+            if (d.Type == EDamageType.Heal) heals++;
+        }
+
+        if (count > 0)
+        {
+            _logger?.LogTrace(CoreLogEvents.DeltaProcessed,
+                "Delta processed: {Count} events (crit={Crit}, heal={Heal}) TargetPlayer={IsTargetPlayer}",
+                count, crits, heals, isTargetPlayer);
         }
     }
 }
@@ -132,7 +141,7 @@ public sealed class SyncToMeDeltaInfoProcessor(IDataStorage storage, ILogger? lo
 {
     public override void Process(byte[] payload)
     {
-        _logger?.LogDebug(nameof(SyncToMeDeltaInfoProcessor));
+        _logger?.LogDebug(CoreLogEvents.SyncToMeDelta, nameof(SyncToMeDeltaInfoProcessor));
         var syncToMeDeltaInfo = SyncToMeDeltaInfo.Parser.ParseFrom(payload);
         var aoiSyncToMeDelta = syncToMeDeltaInfo.DeltaInfo;
         var uuid = aoiSyncToMeDelta.Uuid;
@@ -153,7 +162,7 @@ public sealed class SyncNearDeltaInfoProcessor(IDataStorage storage, ILogger? lo
 {
     public override void Process(byte[] payload)
     {
-        _logger?.LogDebug(nameof(SyncNearDeltaInfoProcessor));
+        _logger?.LogDebug(CoreLogEvents.SyncNearDelta, nameof(SyncNearDeltaInfoProcessor));
         var syncNearDeltaInfo = SyncNearDeltaInfo.Parser.ParseFrom(payload);
         if (syncNearDeltaInfo.DeltaInfos == null || syncNearDeltaInfo.DeltaInfos.Count == 0) return;
 

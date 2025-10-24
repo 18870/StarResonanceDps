@@ -414,7 +414,7 @@
                             Foreground="White"
                             Text="&#xe83a;"
                             TextAlignment="Center"
-                            ToolTip="{lex:Loc Key={x:Static loc:Resources.DpsStatistics_Indicator_ClickThrough_Tooltip}}"
+                            ToolTip="{lex:Loc Key={x:Static loc:ResourcesKeys.DpsStatistics_Indicator_ClickThrough_Tooltip}}"
                             Visibility="{Binding DataContext.AppConfig.MouseThroughEnabled, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVisibilityConverter}}" />
                         <!--  Topmost toggle button (pin / pin-fill)  -->
                         <Button
@@ -423,7 +423,7 @@
                             Command="{Binding ToggleTopmostCommand}"
                             FontFamily="pack://application:,,,/Assets/Fonts/#iconfont"
                             FontSize="15"
-                            ToolTip="{lex:Loc Key={x:Static loc:Resources.DpsStatistics_Indicator_WindowTopMost_Tooltip}}">
+                            ToolTip="{lex:Loc Key={x:Static loc:ResourcesKeys.DpsStatistics_Indicator_WindowTopMost_Tooltip}}">
                             <Button.Style>
                                 <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
                                     <Setter Property="Content" Value="&#xe864;" />

@@ -17,6 +17,7 @@ using StarResonanceDpsAnalysis.WPF.Data;
 using StarResonanceDpsAnalysis.WPF.Extensions;
 using StarResonanceDpsAnalysis.WPF.Models;
 using StarResonanceDpsAnalysis.WPF.Services;
+using StarResonanceDpsAnalysis.WPF.Logging;
 
 namespace StarResonanceDpsAnalysis.WPF.ViewModels;
 
@@ -165,7 +166,15 @@ public partial class DpsStatisticsViewModel : BaseViewModel, IDisposable
     private async Task ToggleTopmost()
     {
         AppConfig.TopmostEnabled = !AppConfig.TopmostEnabled;
-        try { await _configManager.SaveAsync(AppConfig); } catch { }
+        try
+        {
+            await _configManager.SaveAsync(AppConfig);
+        }
+        catch(InvalidOperationException ex)
+        {
+            // Ignore
+            _logger.LogError(ex, "Failed to save AppConfig");
+        }
     }
 
     [RelayCommand]
@@ -222,7 +231,7 @@ public partial class DpsStatisticsViewModel : BaseViewModel, IDisposable
             vm.Initialized = true;
         }
 
-        _logger.LogDebug("VM Loaded");
+        _logger.LogDebug(WpfLogEvents.VmLoaded, "DpsStatisticsViewModel loaded");
         LoadPlayerCache();
 
         EnsureDurationTimerStarted();
@@ -286,7 +295,7 @@ public partial class DpsStatisticsViewModel : BaseViewModel, IDisposable
 
     private void UpdateData(IReadOnlyList<DpsData> data)
     {
-        _logger.LogTrace("Update data");
+        _logger.LogTrace(WpfLogEvents.VmUpdateData, "Update data requested: {Count} entries", data.Count);
 
         var currentPlayerUid = _storage.CurrentPlayerInfo.UID;
 
@@ -483,7 +492,7 @@ public partial class DpsStatisticsViewModel : BaseViewModel, IDisposable
     [RelayCommand]
     private void Refresh()
     {
-        _logger.LogDebug("Manual refresh requested");
+        _logger.LogDebug(WpfLogEvents.VmRefresh, "Manual refresh requested");
 
         // Reload cached player details so that recent changes in the on-disk
         // cache are reflected in the UI.

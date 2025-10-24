@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Remove="App.xaml" />
+    <Compile Include="Logging\WpfLogEvents.cs" />
     <Page Include="App.xaml" />
   </ItemGroup>
   <ItemGroup>

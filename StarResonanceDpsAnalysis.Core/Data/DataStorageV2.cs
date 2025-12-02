@@ -558,10 +558,15 @@ public sealed partial class DataStorageV2(ILogger<DataStorageV2> logger) : IData
         }
         else if (log.IsAttackerPlayer && !log.IsHeal)
         {
+            // 玩家攻击非玩家目标(NPC)
             ProcessPlayerAttackLog(log);
+
+            // 同时也记录NPC承伤数据
+            ProcessNpcLog(log);
         }
         else
         {
+            // 其他情况(NPC攻击NPC, NPC治疗等)
             ProcessNpcLog(log);
         }
     }

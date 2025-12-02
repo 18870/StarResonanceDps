@@ -254,7 +254,11 @@ public sealed class GlobalHotkeyService(
     {
         try
         {
-            dpsStatisticsViewModel.ResetSection();
+            // ? 修复:改为调用RefreshCommand,和刷新按钮效果一致
+            if (dpsStatisticsViewModel.RefreshCommand.CanExecute(null))
+            {
+                dpsStatisticsViewModel.RefreshCommand.Execute(null);
+            }
         }
         catch (Exception ex)
         {

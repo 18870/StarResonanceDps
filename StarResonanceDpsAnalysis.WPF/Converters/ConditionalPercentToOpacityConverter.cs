@@ -4,18 +4,21 @@ using System.Windows.Data;
 namespace StarResonanceDpsAnalysis.WPF.Converters;
 
 /// <summary>
-/// Converts (opacityPercent, isMouseThroughEnabled) -> opacity double (0..1).
-/// Applies opacity regardless of mouse-through state.
+/// Converts (opacityPercent, isEnabled) -> opacity double (0..1).
+/// Returns 1.0 when isEnabled is false.
 /// </summary>
 public sealed class ConditionalPercentToOpacityConverter : IMultiValueConverter
 {
     public object Convert(object[]? values, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (values is null || values.Length < 1)
+        if (values is null || values.Length < 2)
             return 1d;
 
         var opacityPercent = values[0];
-        // Mouse-through state is no longer used to override opacity
+        var enabled = values[1] as bool? ?? (values[1] is string s && bool.TryParse(s, out var b) && b);
+
+        if (!enabled)
+            return 1d;
 
         return opacityPercent switch
         {

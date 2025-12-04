@@ -203,6 +203,7 @@ public partial class DpsStatisticsSubViewModel : BaseViewModel
 
             // Update slot values with pre-computed data
             slot.Value = processed.Value;
+            _logger.LogInformation("Value updated");
             slot.Duration = processed.Duration;
             slot.Damage.FilteredSkillList = processed.FilteredSkillList;
             slot.Damage.TotalSkillList = processed.TotalSkillList;

@@ -24,9 +24,6 @@ public partial class DpsStatisticsView : Window
     {
         DataContext = vm;
         InitializeComponent();
-        
-        // ⭐ 移除本地F9处理,因为GlobalHotkeyService已经统一处理了
-        // this.KeyDown += DpsStatisticsView_KeyDown;
     }
 
     public bool Collapse
@@ -139,21 +136,4 @@ public partial class DpsStatisticsView : Window
         // 这次点击后变成 false：允许“全不选”，什么也不做
         e.Handled = true;
     }
-
-    // ⭐ 修复: F9快捷键应该调用Refresh而不是ResetAll
-    // private void DpsStatisticsView_KeyDown(object sender, KeyEventArgs e)
-    // {
-    //     if (e.Key == Key.F9)
-    //     {
-    //         // ⭐ 修复:调用RefreshCommand,和点击刷新按钮效果一样
-    //         if (DataContext is DpsStatisticsViewModel vm)
-    //         {
-    //             if (vm.RefreshCommand.CanExecute(null))
-    //             {
-    //                 vm.RefreshCommand.Execute(null); // 只刷新数据,不清空
-    //             }
-    //         }
-    //         e.Handled = true;
-    //     }
-    // }
 }

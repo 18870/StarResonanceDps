@@ -31,9 +31,10 @@ public partial class SettingsViewModel(
     private List<Option<Language>> _availableLanguages =
     [
         new(Language.Auto, Language.Auto.GetLocalizedDescription()),
-      new(Language.ZhCn, Language.ZhCn.GetLocalizedDescription()),
+        new(Language.ZhCn, Language.ZhCn.GetLocalizedDescription()),
         new(Language.EnUs, Language.EnUs.GetLocalizedDescription()),
-   new(Language.PtBr, Language.PtBr.GetLocalizedDescription()),
+        new(Language.PtBr, Language.PtBr.GetLocalizedDescription()),
+        new(Language.KoKr, Language.KoKr.GetLocalizedDescription())
     ];
 
     [ObservableProperty] private List<NetworkAdapterInfo> _availableNetworkAdapters = [];

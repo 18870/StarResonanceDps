@@ -1611,7 +1611,7 @@ namespace StarResonanceDpsAnalysis.WPF.Properties {
         }
         
         /// <summary>
-        ///   查找类似 Active 的本地化字符串。
+        ///   查找类似 Timer Based 的本地化字符串。
         /// </summary>
         public static string Settings_Combat_DpsUpdateMode_Active {
             get {
@@ -1620,7 +1620,7 @@ namespace StarResonanceDpsAnalysis.WPF.Properties {
         }
         
         /// <summary>
-        ///   查找类似 Passive 的本地化字符串。
+        ///   查找类似 Real Time 的本地化字符串。
         /// </summary>
         public static string Settings_Combat_DpsUpdateMode_Passive {
             get {
@@ -1629,8 +1629,10 @@ namespace StarResonanceDpsAnalysis.WPF.Properties {
         }
         
         /// <summary>
-        ///   查找类似 Passive: Event-driven updates (low CPU usage)
-        ///Active: Timer-based periodic updates (configurable refresh interval) 的本地化字符串。
+        ///   查找类似 Real Time: Event-driven updates
+        ///
+        ///Timer Based: Timer-based periodic updates
+        ///(low CPU usage, configurable refresh interval) 的本地化字符串。
         /// </summary>
         public static string Settings_Combat_DpsUpdateMode_Tooltip {
             get {

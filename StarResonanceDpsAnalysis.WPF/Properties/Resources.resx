@@ -178,7 +178,7 @@
     <value>Exit</value>
   </data>
   <data name="Menu_Training" xml:space="preserve">
-  <value>Training Mode</value>
+    <value>Training Mode</value>
   </data>
   <data name="Tooltip_ToggleScope" xml:space="preserve">
     <value>Toggle: Full / Current</value>
@@ -249,11 +249,23 @@
   <data name="Settings_Display_Opacity" xml:space="preserve">
     <value>Overlay opacity</value>
   </data>
+  <data name="Settings_Display_PlayerNameBlur" xml:space="preserve">
+    <value>Mask player names</value>
+  </data>
+  <data name="Settings_PlayerNameMask_Warning_Title" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="Settings_PlayerNameMask_Warning_Message" xml:space="preserve">
+    <value>Do not use data results to discriminate or harm the game community environment.</value>
+  </data>
+  <data name="Menu_TemporaryMaskPlayerName" xml:space="preserve">
+    <value>Temporary masking</value>
+  </data>
   <data name="Settings_Section_Language_Title" xml:space="preserve">
-    <value>Language</value>
+    <value>Display Settings</value>
   </data>
   <data name="Settings_Section_Language_Description" xml:space="preserve">
-    <value>Choose the interface language</value>
+    <value>Interface display preferences</value>
   </data>
   <data name="Settings_Language_Auto" xml:space="preserve">
     <value>Follow system</value>
@@ -277,7 +289,7 @@
     <value>About</value>
   </data>
   <data name="About_Intro_Primary" xml:space="preserve">
-    <value>A combat data analytics tool built for Star Resonance players.</value>
+    <value>A combat data analytics tool built for BPSR players.</value>
   </data>
   <data name="About_Intro_Details" xml:space="preserve">
     <value>This tool requires no client modifications and stays within the game's terms of service. It helps players understand combat data, reduce unnecessary effort, and improve the gameplay experience. Please do not use the results for power discrimination or any behaviour that harms the community.</value>
@@ -442,7 +454,7 @@
     <value>Theme switch test text</value>
   </data>
   <data name="Debug_Button_PcapTest" xml:space="preserve">
-    <value>Pcap Test</value>
+    <value>Test Pcap</value>
   </data>
   <data name="Debug_Button_SkillBreakdown" xml:space="preserve">
     <value>Skill Breakdown View</value>
@@ -845,13 +857,10 @@
     <value>Auto</value>
   </data>
   <data name="Window_BossTracker_Title" xml:space="preserve">
-    <value>野外Boss状态查看器</value>
+    <value>Boss Status Tracker</value>
   </data>
   <data name="Debug_Localization_Language" xml:space="preserve">
     <value>Language:</value>
-  </data>
-  <data name="Debug_Localization_Apply" xml:space="preserve">
-    <value>Apply</value>
   </data>
   <data name="Debug_Localization_TestKey" xml:space="preserve">
     <value>Test Key:</value>
@@ -931,7 +940,7 @@ Recommended: 500-2000 milliseconds</value>
     <value>ms</value>
   </data>
   <data name="Window_Training_Title" xml:space="preserve">
-    <value>训练模式</value>
+    <value>Training</value>
   </data>
   <data name="MainView_Plugin_Training_Title" xml:space="preserve">
     <value />
@@ -939,14 +948,12 @@ Recommended: 500-2000 milliseconds</value>
   <data name="MainView_Plugin_Training_Description" xml:space="preserve">
     <value />
   </data>
-  <!--  ⭐ 新增: 开关伤害统计快捷键  -->
   <data name="Settings_Shortcut_ToggleDps" xml:space="preserve">
     <value>Toggle DPS Window</value>
   </data>
   <data name="Settings_Shortcut_ToggleDps_Tooltip" xml:space="preserve">
     <value>Focus this box and press a shortcut (e.g. F10). Press Delete to clear.</value>
   </data>
-  <!--  ⭐ 新增: 角色设置  -->
   <data name="Settings_Section_Character_Title" xml:space="preserve">
     <value>Character Settings</value>
   </data>
@@ -960,7 +967,6 @@ Recommended: 500-2000 milliseconds</value>
     <value>Enter your character UID (number)
 How to get: After a fight, your character will automatically appear in the stats window</value>
   </data>
-  <!--  ⭐ 新增: 历史记录保存数量  -->
   <data name="Settings_Combat_MaxHistoryCount" xml:space="preserve">
     <value>History Record Limit</value>
   </data>
@@ -969,5 +975,8 @@ How to get: After a fight, your character will automatically appear in the stats
   </data>
   <data name="Settings_Common_Records" xml:space="preserve">
     <value>records</value>
+  </data>
+  <data name="Debug_Localization_Apply" xml:space="preserve">
+    <value>Apply</value>
   </data>
 </root>

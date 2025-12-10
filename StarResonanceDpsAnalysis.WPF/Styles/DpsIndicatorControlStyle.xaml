@@ -46,34 +46,19 @@
                             ContentTemplate="{Binding OverlayTemplate, RelativeSource={RelativeSource TemplatedParent}}"
                             IsHitTestVisible="False" />
 
-                        <!--  Custom Popup with proper mouse handling  -->
+                        <!--  Custom Popup  -->
                         <Popup
                             x:Name="PART_Popup"
                             AllowsTransparency="True"
                             IsHitTestVisible="False"
-                            Placement="MousePoint"
+                            Placement="Custom"
                             PlacementTarget="{Binding ElementName=Root}"
                             PopupAnimation="Fade"
                             StaysOpen="True">
-                            <Border
-                                MaxWidth="360"
-                                Padding="6"
-                                Background="#CC202020"
-                                BorderThickness="0"
-                                CornerRadius="4"
-                                IsHitTestVisible="False">
-                                <Border.Effect>
-                                    <DropShadowEffect
-                                        BlurRadius="10"
-                                        Opacity="0.3"
-                                        ShadowDepth="2" />
-                                </Border.Effect>
-                                <!--  Actual content  -->
-                                <ContentControl
-                                    Content="{Binding PopupContent, RelativeSource={RelativeSource TemplatedParent}}"
-                                    ContentTemplate="{Binding PopupTemplate, RelativeSource={RelativeSource TemplatedParent}}"
-                                    IsHitTestVisible="False" />
-                            </Border>
+                            <ContentControl
+                                Content="{Binding PopupContent, RelativeSource={RelativeSource TemplatedParent}}"
+                                ContentTemplate="{Binding PopupTemplate, RelativeSource={RelativeSource TemplatedParent}}"
+                                IsHitTestVisible="False" />
                         </Popup>
                     </Grid>
                     <ControlTemplate.Triggers>

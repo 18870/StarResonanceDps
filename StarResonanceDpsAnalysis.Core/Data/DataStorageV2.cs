@@ -300,6 +300,7 @@ public sealed partial class DataStorageV2(ILogger<DataStorageV2> logger) : IData
         if (_disposed) return;
         DateTime last;
         bool alreadyCleared;
+
         lock (_sectionTimeoutLock)
         {
             last = _lastLogWallClockAtUtc;
@@ -307,23 +308,37 @@ public sealed partial class DataStorageV2(ILogger<DataStorageV2> logger) : IData
         }
 
         if (alreadyCleared) return;
-        if (last == DateTime.MinValue) return; // no logs yet
+        if (last == DateTime.MinValue) return;
 
         var now = DateTime.UtcNow;
         if (now - last <= SectionTimeout) return;
 
-        // Timeout reached: clear section and notify
+        // ⭐ 新增:检查是否有分段数据,没有数据就不触发事件
+        if (SectionedDpsData.Count == 0)
+        {
+            _timeoutSectionClearedOnce = true;
+            return;
+        }
+
+        // 有数据才触发事件并清空
         try
         {
-            PrivateClearDpsData(); // raises DpsDataUpdated & DataUpdated
+            BeforeSectionCleared?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred during BeforeSectionCleared event");
+            ExceptionHelper.ThrowIfDebug(ex);
+        }
+
+        try
+        {
+            PrivateClearDpsData();
             RaiseNewSectionCreated();
         }
         finally
         {
-            lock (_sectionTimeoutLock)
-            {
-                _timeoutSectionClearedOnce = true;
-            }
+            _timeoutSectionClearedOnce = true;
         }
     }
 
@@ -508,7 +523,7 @@ public sealed partial class DataStorageV2(ILogger<DataStorageV2> logger) : IData
 
     /// <summary>
     /// Checks if the time since the last battle log exceeds the section timeout threshold
- /// and creates a new section if necessary
+    /// and creates a new section if necessary
     /// </summary>
     /// <param name="log">The current battle log being processed</param>
     /// <returns>True if a new section was created; otherwise, false</returns>
@@ -525,11 +540,24 @@ public sealed partial class DataStorageV2(ILogger<DataStorageV2> logger) : IData
         if (LastBattleLog == null)
             return false;
 
-        // Compare ticks directly instead of creating TimeSpan objects for better performance
         var timeSinceLastLog = log.TimeTicks - LastBattleLog.Value.TimeTicks;
 
         if (timeSinceLastLog > SectionTimeout.Ticks || ForceNewBattleSection)
         {
+            // ⭐ 新增:检查是否有分段数据,有数据才触发事件
+            if (SectionedDpsData.Count > 0)
+            {
+                try
+                {
+                    BeforeSectionCleared?.Invoke();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "An error occurred during BeforeSectionCleared event");
+                    ExceptionHelper.ThrowIfDebug(ex);
+                }
+            }
+
             PrivateClearDpsDataNoEvents();
             ForceNewBattleSection = false;
             return true;
@@ -566,8 +594,9 @@ public sealed partial class DataStorageV2(ILogger<DataStorageV2> logger) : IData
         }
         else
         {
-            // 其他情况(NPC攻击NPC, NPC治疗等)
-            ProcessNpcLog(log);
+            // ⭐ 修复: 其他情况(NPC攻击玩家/NPC, NPC治疗等)
+            // 处理NPC的攻击输出数据
+            ProcessNpcAttackLog(log);
         }
     }
 
@@ -593,8 +622,18 @@ public sealed partial class DataStorageV2(ILogger<DataStorageV2> logger) : IData
         }
         else
         {
-            var (fullData, sectionedData) = SetLogInfos(log.TargetUuid, log);
-            UpdateDpsData(fullData, sectionedData, log, DpsType.TakenDamage);
+            // ⭐ 修复: 记录玩家承伤
+            var (targetFull, targetSectioned) = SetLogInfos(log.TargetUuid, log);
+            UpdateDpsData(targetFull, targetSectioned, log, DpsType.TakenDamage);
+
+            // ⭐ 新增: 如果攻击者是NPC,同时记录NPC的输出数据
+            if (!log.IsAttackerPlayer)
+            {
+                var (attackerFull, attackerSectioned) = SetLogInfos(log.AttackerUuid, log);
+                attackerFull.IsNpcData = true;
+                attackerSectioned.IsNpcData = true;
+                UpdateDpsData(attackerFull, attackerSectioned, log, DpsType.AttackDamage);
+            }
         }
     }
 
@@ -627,6 +666,41 @@ public sealed partial class DataStorageV2(ILogger<DataStorageV2> logger) : IData
         fullData.IsNpcData = true;
         sectionedData.IsNpcData = true;
         UpdateDpsData(fullData, sectionedData, log, DpsType.TakenDamage);
+    }
+
+    /// <summary>
+    /// ⭐ 新增: 处理NPC攻击数据(输出伤害)
+    /// </summary>
+    /// <param name="log">The battle log to process</param>
+    /// <remarks>
+    /// Records NPC attack output when NPC attacks players or other NPCs.
+    /// Also records target's taken damage if target is NPC.
+    /// </remarks>
+    private void ProcessNpcAttackLog(BattleLog log)
+    {
+        // 记录NPC的攻击输出
+        if (!log.IsHeal && !log.IsAttackerPlayer)
+        {
+            var (attackerFull, attackerSectioned) = SetLogInfos(log.AttackerUuid, log);
+            attackerFull.IsNpcData = true;
+            attackerSectioned.IsNpcData = true;
+            UpdateDpsData(attackerFull, attackerSectioned, log, DpsType.AttackDamage);
+        }
+
+        // 如果目标也是NPC,记录其承伤
+        if (!log.IsTargetPlayer)
+        {
+            var (targetFull, targetSectioned) = SetLogInfos(log.TargetUuid, log);
+            targetFull.IsNpcData = true;
+            targetSectioned.IsNpcData = true;
+            UpdateDpsData(targetFull, targetSectioned, log, DpsType.TakenDamage);
+        }
+        // 如果目标是玩家,记录玩家承伤
+        else
+        {
+            var (targetFull, targetSectioned) = SetLogInfos(log.TargetUuid, log);
+            UpdateDpsData(targetFull, targetSectioned, log, DpsType.TakenDamage);
+        }
     }
 
     /// <summary>
@@ -1095,5 +1169,10 @@ public partial class DataStorageV2
         }
     }
 
+    // 在 Events 区域添加新事件(约第780行后):
+    /// <summary>
+    /// ⭐ 新增: 分段数据即将被清空前触发 (用于保存快照)
+    /// </summary>
+    public event Action? BeforeSectionCleared;
     #endregion
 }

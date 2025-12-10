@@ -18,12 +18,13 @@ namespace StarResonanceDpsAnalysis.WPF.ViewModels;
 public sealed class DpsStatisticsDesignTimeViewModel : DpsStatisticsViewModel
 {
     public DpsStatisticsDesignTimeViewModel() : base(
-        new DesignAppControlService(),
-        new DesignDataStorage(),
         NullLogger<DpsStatisticsViewModel>.Instance,
+        new DesignDataStorage(),
         new DesignConfigManager(),
         new DesignWindowManagementService(),
         new DesignTopmostService(),
+        new DesignAppControlService(),
+        Dispatcher.CurrentDispatcher,
         new DebugFunctions(
             Dispatcher.CurrentDispatcher,
             NullLogger<DebugFunctions>.Instance,
@@ -31,8 +32,11 @@ public sealed class DpsStatisticsDesignTimeViewModel : DpsStatisticsViewModel
             new DesignOptionsMonitor(),
             null!,
             LocalizationManager.Instance),
-        Dispatcher.CurrentDispatcher)
+        new DesignBattleSnapshotService()) // ? 添加设计时快照服务
     {
+        // Initialize AppConfig
+        AppConfig = new AppConfig { DebugEnabled = true };
+
         // Populate with a few sample entries so designer shows something.
         try
         {
@@ -48,6 +52,16 @@ public sealed class DpsStatisticsDesignTimeViewModel : DpsStatisticsViewModel
     }
 
     #region Stub Implementations
+
+    // ? 修复: 设计时快照服务（添加 IConfigManager 参数）
+    private sealed class DesignBattleSnapshotService : BattleSnapshotService
+    {
+        public DesignBattleSnapshotService() : base(
+            NullLogger<BattleSnapshotService>.Instance,
+            new DesignConfigManager()) // ? 新增：传入配置管理器
+        {
+        }
+    }
 
     private sealed class DesignTopmostService : ITopmostService
     {
@@ -199,6 +213,25 @@ public sealed class DpsStatisticsDesignTimeViewModel : DpsStatisticsViewModel
         }
     }
 
+    private sealed class DesignConfigManager : IConfigManager
+    {
+#pragma warning disable CS0067
+        public event EventHandler<AppConfig>? ConfigurationUpdated;
+#pragma warning restore
+
+        public AppConfig CurrentConfig => GetConfiguration();
+
+        private AppConfig GetConfiguration()
+        {
+            return new AppConfig { DebugEnabled = true };
+        }
+
+        public Task SaveAsync(AppConfig? config)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
     private sealed class DesignLogObservable : IObservable<LogEvent>
     {
         public IDisposable Subscribe(IObserver<LogEvent> observer)
@@ -239,5 +272,10 @@ public sealed class DpsStatisticsDesignTimeViewModel : DpsStatisticsViewModel
 
     #endregion
 }
+
+
+
+
+
 
 

@@ -118,6 +118,8 @@ public partial class App : Application
                 services.AddWindowManagementService();
                 services.AddMessageDialogService();
 
+                services.AddSingleton<BattleSnapshotService>();
+
                 services.AddSingleton<DebugFunctions>();
                 services.AddSingleton(CaptureDeviceList.Instance);
                 services.AddSingleton<IApplicationControlService, ApplicationControlService>();

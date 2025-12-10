@@ -76,13 +76,19 @@ public partial class AppConfig : ObservableObject
     private bool _clearLogAfterTeleport;
 
     /// <summary>
-    /// 不透明度（0-100）, 默认100, 0为全透明
+    /// 不透明度 (0-100) (有效范围: 5-95), 默认95, 0为全透明(会影响鼠标交互)
     /// </summary>
     [ObservableProperty]
     private double _opacity = 100;
 
     /// <summary>
-    /// 鼠标穿透开关（WPF）
+    /// 玩家名脱敏
+    /// </summary>
+    [ObservableProperty]
+    private bool _maskPlayerName = true;
+
+    /// <summary>
+    /// 鼠标穿透开关 (WPF)
     /// </summary>
     [ObservableProperty]
     private bool _mouseThroughEnabled;
@@ -130,6 +136,12 @@ public partial class AppConfig : ObservableObject
     private KeyBinding _clearDataShortcut = new(Key.F9, ModifierKeys.None);
 
     /// <summary>
+    /// ⭐ 新增: 开关伤害统计快捷键
+    /// </summary>
+    [ObservableProperty]
+    private KeyBinding _toggleDpsShortcut = new(Key.F10, ModifierKeys.None);
+
+    /// <summary>
     /// 当前窗口是否置顶
     /// </summary>
     [ObservableProperty]
@@ -151,6 +163,14 @@ public partial class AppConfig : ObservableObject
     /// </summary>
     [ObservableProperty]
     private int _dpsUpdateInterval = 1000;
+
+    /// <summary>
+    /// ⭐ 新增: 历史记录最大保存数量
+    /// 默认值：15条
+    /// 范围：5 - 50
+    /// </summary>
+    [ObservableProperty]
+    private int _maxHistoryCount = 15;
 
     public AppConfig Clone()
     {

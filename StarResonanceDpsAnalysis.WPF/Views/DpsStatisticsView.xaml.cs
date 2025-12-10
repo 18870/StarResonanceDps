@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using StarResonanceDpsAnalysis.WPF.ViewModels;
+using StarResonanceDpsAnalysis.WPF.Converters;
 
 namespace StarResonanceDpsAnalysis.WPF.Views;
 
@@ -24,9 +25,12 @@ public partial class DpsStatisticsView : Window
     {
         DataContext = vm;
         InitializeComponent();
-        
-        // ⭐ 移除本地F9处理,因为GlobalHotkeyService已经统一处理了
-        // this.KeyDown += DpsStatisticsView_KeyDown;
+
+        // ⭐ 初始化默认值:记录所有(0秒)
+        vm.Options.MinimalDurationInSeconds = 0;
+
+        // ⭐ 新增: 右键退出快照模式
+        MouseRightButtonDown += OnWindowRightClick;
     }
 
     public bool Collapse
@@ -93,8 +97,6 @@ public partial class DpsStatisticsView : Window
     /// <summary>
     /// 训练模式选择
     /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
     private void TrainingMenuItem_Click(object sender, RoutedEventArgs e)
     {
         var me = (MenuItem)sender;
@@ -108,18 +110,14 @@ public partial class DpsStatisticsView : Window
                 if (owner.ItemContainerGenerator.ContainerFromItem(obj) is MenuItem mi && !ReferenceEquals(mi, me))
                     mi.IsChecked = false;
             }
-            // me 已经是 true，不用再设
         }
 
-        // 这次点击后变成 false：允许“全不选”，什么也不做
         e.Handled = true;
     }
 
     /// <summary>
     /// 测伤模式
     /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
     private void AxisMenuItem_Click(object sender, RoutedEventArgs e)
     {
         var me = (MenuItem)sender;
@@ -133,27 +131,47 @@ public partial class DpsStatisticsView : Window
                 if (owner.ItemContainerGenerator.ContainerFromItem(obj) is MenuItem mi && !ReferenceEquals(mi, me))
                     mi.IsChecked = false;
             }
-            // me 已经是 true，不用再设
         }
 
-        // 这次点击后变成 false：允许“全不选”，什么也不做
         e.Handled = true;
     }
 
-    // ⭐ 修复: F9快捷键应该调用Refresh而不是ResetAll
-    // private void DpsStatisticsView_KeyDown(object sender, KeyEventArgs e)
-    // {
-    //     if (e.Key == Key.F9)
-    //     {
-    //         // ⭐ 修复:调用RefreshCommand,和点击刷新按钮效果一样
-    //         if (DataContext is DpsStatisticsViewModel vm)
-    //         {
-    //             if (vm.RefreshCommand.CanExecute(null))
-    //             {
-    //                 vm.RefreshCommand.Execute(null); // 只刷新数据,不清空
-    //             }
-    //         }
-    //         e.Handled = true;
-    //     }
-    // }
+    /// <summary>
+    /// ⭐ 新增: 记录设置选择(互斥单选)
+    /// </summary>
+    private void RecordSettingsMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        var me = (MenuItem)sender;
+        var owner = ItemsControl.ItemsControlFromItemContainer(me);
+
+        if (me.IsChecked && owner != null)
+        {
+            // 这次点击后变成 true：把其它都关掉
+            foreach (var obj in owner.Items)
+            {
+                if (owner.ItemContainerGenerator.ContainerFromItem(obj) is MenuItem mi && !ReferenceEquals(mi, me))
+                    mi.IsChecked = false;
+            }
+        }
+
+        // ⭐ XAML中已设置StaysOpenOnClick="True",这里只需要阻止事件冒泡
+        e.Handled = true;
+    }
+
+    /// <summary>
+    /// ⭐ 新增: 窗口右键处理 - 退出快照模式
+    /// </summary>
+    private void OnWindowRightClick(object sender, MouseButtonEventArgs e)
+    {
+        if (DataContext is DpsStatisticsViewModel vm && vm.IsViewingSnapshot)
+        {
+
+            // 如果正在查看快照,右键退出快照模式
+            if (vm.ExitSnapshotViewModeCommand.CanExecute(null))
+            {
+                vm.ExitSnapshotViewModeCommand.Execute(null);
+                e.Handled = true; // 阻止默认右键菜单
+            }
+        }
+    }
 }

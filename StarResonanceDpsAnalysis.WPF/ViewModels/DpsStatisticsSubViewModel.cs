@@ -47,6 +47,7 @@ public partial class DpsStatisticsSubViewModel : BaseViewModel
     [ObservableProperty] private int _skillDisplayLimit = 8;
     [ObservableProperty] private SortDirectionEnum _sortDirection = SortDirectionEnum.Descending;
     [ObservableProperty] private string _sortMemberPath = "Value";
+    [ObservableProperty] private bool _suppressSorting;
 
     public DpsStatisticsSubViewModel(ILogger<DpsStatisticsViewModel> logger, Dispatcher dispatcher, StatisticType type,
         IDataStorage storage,
@@ -112,10 +113,16 @@ public partial class DpsStatisticsSubViewModel : BaseViewModel
     /// <summary>
     /// Sorts the slots collection in-place based on the current sort criteria
     /// </summary>
-    public void SortSlotsInPlace()
+    public void SortSlotsInPlace(bool force = false)
     {
         if (Data.Count == 0 || string.IsNullOrWhiteSpace(SortMemberPath))
             return;
+
+        if (!force && SuppressSorting)
+        {
+            UpdateItemIndices();
+            return;
+        }
 
         try
         {
@@ -204,8 +211,16 @@ public partial class DpsStatisticsSubViewModel : BaseViewModel
             // Update slot values with pre-computed data
             slot.Value = processed.Value;
             slot.Duration = processed.Duration;
+
+            // ? 修复: 更新所有三种技能列表数据
             slot.Damage.FilteredSkillList = processed.FilteredSkillList;
             slot.Damage.TotalSkillList = processed.TotalSkillList;
+
+            slot.Heal.FilteredSkillList = processed.FilteredHealSkillList;
+            slot.Heal.TotalSkillList = processed.TotalHealSkillList;
+
+            slot.TakenDamage.FilteredSkillList = processed.FilteredTakenDamageSkillList;
+            slot.TakenDamage.TotalSkillList = processed.TotalTakenDamageSkillList;
 
             // Update player info
             slot.Player.Name = processed.PlayerName;
@@ -385,7 +400,7 @@ public partial class DpsStatisticsSubViewModel : BaseViewModel
         }
 
         // Trigger immediate re-sort
-        SortSlotsInPlace();
+        SortSlotsInPlace(force: true);
     }
 
     /// <summary>
@@ -394,7 +409,7 @@ public partial class DpsStatisticsSubViewModel : BaseViewModel
     [RelayCommand]
     private void ManualSort()
     {
-        SortSlotsInPlace();
+        SortSlotsInPlace(force: true);
     }
 
     /// <summary>
@@ -414,7 +429,7 @@ public partial class DpsStatisticsSubViewModel : BaseViewModel
     {
         SortMemberPath = "Name";
         SortDirection = SortDirectionEnum.Ascending;
-        SortSlotsInPlace();
+        SortSlotsInPlace(force: true);
     }
 
     /// <summary>
